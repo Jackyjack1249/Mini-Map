@@ -1,0 +1,98 @@
+repeat wait() until game.Workspace:FindFirstChild("TestPart")
+
+local run = game:GetService("RunService")
+local character = game:GetService("Players").LocalPlayer.Character
+
+local viewportFrame = script.Parent
+
+local viewportCamera = Instance.new("Camera")
+viewportFrame.CurrentCamera = viewportCamera
+viewportCamera.Parent = viewportFrame
+
+local worldModel = Instance.new("Model")
+worldModel.Parent = viewportFrame
+
+local playerMarkets = Instance.new("Model")
+playerMarkets.Parent = worldModel
+
+local worldModelPlayers = Instance.new("Model")
+worldModelPlayers.Parent = viewportFrame
+
+local MapCloned = false
+
+local function cloneWorkspaceToViewport()
+	for i, CurrentMarkets in pairs(playerMarkets:GetChildren()) do
+		CurrentMarkets:Destroy()
+	end
+	
+	for i, PlayerMarkets in pairs(game:GetService("Workspace").Markers:GetChildren()) do
+		PlayerMarkets:Clone().Parent = playerMarkets
+	end
+	
+	if not MapCloned then
+		MapCloned = true
+		
+		for _, obj in pairs(workspace:GetChildren()) do
+			if not obj:IsA("Terrain") and obj ~= character then
+				if obj:IsA("BasePart") then
+					local clone = obj:Clone()
+					clone.Parent = worldModel
+				elseif obj:IsA("Model") then
+					for _, part in pairs(obj:GetDescendants()) do
+						if part:IsA("BasePart") then
+							local clone = part:Clone()
+							clone.Parent = worldModel
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local function updatePlayers()
+	cloneWorkspaceToViewport()
+	
+	for _, obj in ipairs(worldModelPlayers:GetChildren()) do
+		obj:Destroy()
+	end
+
+	for i, PlayersInPlayers in pairs(game:GetService("Players"):GetChildren()) do
+		for i, PlayersBody in pairs(game:GetService("Workspace")[PlayersInPlayers.Name]:GetDescendants()) do
+			if PlayersBody:IsA("BasePart") then
+				local clone = PlayersBody:Clone()
+				clone.Parent = worldModelPlayers
+			end
+		end
+	end
+end
+
+local function CreateMarker()
+	Location = Instance.new("Part")
+	local Decal = Instance.new("Decal")
+
+	Location.Size = Vector3.new(10, 1, 10)
+	Location.Anchored = true
+	Location.CanCollide = false
+	Location.Transparency = 1
+	
+	Decal.Texture = "rbxassetid://988908252"
+	Decal.Parent = Location
+	Decal.Face = Enum.NormalId.Top
+	
+	Location.Parent = game:GetService("Workspace").Markers
+end
+
+local function UpdateMarker()
+	Location.CFrame = character.HumanoidRootPart.CFrame + Vector3.new(0, 20, 0)
+end
+
+cloneWorkspaceToViewport()
+CreateMarker()
+
+run.RenderStepped:Connect(function()
+	updatePlayers()
+	UpdateMarker()
+	
+	viewportCamera.CFrame = game.Workspace.TestPart.CFrame
+end)
