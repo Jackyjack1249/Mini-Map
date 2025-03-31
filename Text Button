@@ -1,0 +1,40 @@
+script.Parent.BackgroundTransparency = 1 -- Yea
+
+local TweenService = game:GetService("TweenService")
+
+local Open = false
+local Debounce = false
+
+local function Tween(Position, Size)
+	local TweenInfo = TweenInfo.new(
+		1, -- Time it will take
+		Enum.EasingStyle.Linear, -- Easing Style
+		Enum.EasingDirection.In
+	)
+	
+	local Goal = {}
+	Goal.Position = Position
+	Goal.Size = Size
+	
+	local Tween = TweenService:Create(script.Parent.Parent, TweenInfo, Goal)
+	
+	Tween:Play()
+	
+	Tween.Completed:Wait()
+	
+	Debounce = false
+end
+
+script.Parent.MouseButton1Up:Connect(function()
+	if not Debounce then
+		Debounce = true
+		
+		if not Open then
+			Tween(UDim2.new(0.202, 0, 0.085, 0), UDim2.new(0.595, 0,0.829, 0))
+		else
+			Tween(UDim2.new(0.021, 0, 0.674, 0), UDim2.new(0.213, 0, 0.296, 0))
+		end
+		
+		Open = not Open
+	end
+end)
